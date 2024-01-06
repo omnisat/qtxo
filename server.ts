@@ -75,7 +75,7 @@ async function addUtxosToQueue(address: string, utxos: IBlockchainInfoUTXO[]): P
 }
 
 async function cleanUpExpiredUtxos(): Promise<void> {
-    console.log("cleaning up expired utxos")
+    console.log("cleaning out utxo queue")
     const jobs = await utxoQueue.getJobs(['delayed', 'waiting']);
     const currentTime = Date.now();
 

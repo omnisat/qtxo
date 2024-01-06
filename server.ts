@@ -21,18 +21,15 @@ app.get('/utxos/:address/:amount', async (req, res) => {
     const requestedAmount = parseInt(amount);
 
     try {
-        // Fetch new UTXOs
         let newUtxos = await getUnspentsForAddress(address);
         newUtxos = newUtxos.filter(utxo => utxo.value > 546)
             .sort((a, b) => b.value - a.value);
 
-        // Get UTXOs not recently used and enough to cover the requested amount
         const selectedUtxos = await selectValidUtxos(address, newUtxos, requestedAmount);
 
         // Calculate expiration timestamp
         const expirationTimestamp = Date.now() + UTXO_CACHE_TIME_SECS * 1000;
 
-        // Add expiration timestamp to each UTXO and add them to the queue
         const utxosWithExpiration = selectedUtxos.map(utxo => ({
             ...utxo,
             expiration: expirationTimestamp
@@ -69,7 +66,7 @@ async function addUtxosToQueue(address: string, utxos: IBlockchainInfoUTXO[]): P
     for (const utxo of utxos) {
         await utxoQueue.add(`${utxo.tx_hash_big_endian}-${utxo.tx_output_n}`, { address, utxo }, {
             removeOnComplete: true,
-            delay: UTXO_CACHE_TIME_SECS * 1000 // Delay of 15 seconds
+            delay: UTXO_CACHE_TIME_SECS * 1000
         });
     }
 }
@@ -86,11 +83,10 @@ async function cleanUpExpiredUtxos(): Promise<void> {
     }
 }
 
-// Schedule the cleanup function to run periodically
-setInterval(cleanUpExpiredUtxos, UTXO_CACHE_TIME_SECS * 1000); // Run every 60 seconds
+setInterval(cleanUpExpiredUtxos, UTXO_CACHE_TIME_SECS * 1000);
 
 app.get('/', async (req, res) => {
-    res.send("queutxo-service is healthy");
+    res.send("qtxo is healthy");
 })
 
 app.listen(port, () => {

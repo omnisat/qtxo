@@ -1,8 +1,7 @@
 {
-  "name": "queutxo-service",
+  "name": "@omnisat-foundation/qtxo",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "nodemon",
     "start": "node dist/server.js",

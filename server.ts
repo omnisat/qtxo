@@ -89,6 +89,10 @@ async function cleanUpExpiredUtxos(): Promise<void> {
 // Schedule the cleanup function to run periodically
 setInterval(cleanUpExpiredUtxos, UTXO_CACHE_TIME_SECS * 1000); // Run every 60 seconds
 
+app.get('/', async (req, res) => {
+    res.send("queutxo-service is healthy");
+})
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

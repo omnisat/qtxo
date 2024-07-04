@@ -13,7 +13,6 @@ const port = process.env.PORT || 3031;
 const redis = new IORedis(String(process.env["REDIS_URL"]));
 const UTXO_CACHE_TIME_SECS = parseInt(String(process.env["UTXO_CACHE_TIME_SECS"])) || 15;
 
-
 const utxoQueue = new Queue('utxos', { connection: redis });
 
 app.get('/utxos/:address/:amount', async (req, res) => {
@@ -25,7 +24,7 @@ app.get('/utxos/:address/:amount', async (req, res) => {
         newUtxos = newUtxos.filter(utxo => utxo.value > 546)
             .sort((a, b) => b.value - a.value);
 
-        const selectedUtxos = await selectValidUtxos(address, newUtxos, requestedAmount);
+        const selectedUtxos = await selectValidUtxos(newUtxos, requestedAmount);
 
         // Calculate expiration timestamp
         const expirationTimestamp = Date.now() + UTXO_CACHE_TIME_SECS * 1000;
@@ -43,13 +42,11 @@ app.get('/utxos/:address/:amount', async (req, res) => {
     }
 });
 
-async function selectValidUtxos(address: string, utxos: IBlockchainInfoUTXO[], amount: number): Promise<IBlockchainInfoUTXO[]> {
+async function selectValidUtxos(utxos: IBlockchainInfoUTXO[], amount: number): Promise<IBlockchainInfoUTXO[]> {
     const jobs = await utxoQueue.getJobs(['active', 'delayed', 'waiting']);
     const recentlyUsedUtxos = new Set(jobs.map(job => job.name));
     let selectedUtxos: IBlockchainInfoUTXO[] = [];
     let totalValue = 0;
-
-    console.log("num of utxos in queue", recentlyUsedUtxos.size)
 
     for (const utxo of utxos) {
         if (totalValue >= amount) break;
